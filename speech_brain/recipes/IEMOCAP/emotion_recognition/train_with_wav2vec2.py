@@ -36,7 +36,7 @@ class EmoIdBrain(sb.Brain):
         return outputs
 
     def compute_objectives(self, predictions, batch, stage):
-        """Computes the loss using speaker-id as label."""
+        """Computes the loss using affect as label."""
         emoid, _ = batch.emo_encoded
 
         """to meet the input form of nll loss"""
