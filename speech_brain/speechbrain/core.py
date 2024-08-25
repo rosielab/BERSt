@@ -209,7 +209,7 @@ def _logging_excepthook(exc_type, exc_value, exc_traceback):
     """Interrupt exception raising to log the error."""
     logger.error("Exception:", exc_info=(exc_type, exc_value, exc_traceback))
 
-
+### UPDATED #####
 def parse_arguments(arg_list=None):
     """Parse command-line arguments to the experiment.
 
@@ -221,8 +221,12 @@ def parse_arguments(arg_list=None):
 
     Returns
     -------
+    data_folder : str
+        The location of the csvs containing the metadata.
     param_file : str
         The location of the parameters file.
+    audio_path
+        The base bath to the audio files.
     run_opts : dict
         Run options, such as distributed, device, etc.
     overrides : dict
@@ -231,7 +235,7 @@ def parse_arguments(arg_list=None):
     Example
     -------
     >>> argv = ['hyperparams.yaml', '--device', 'cuda:1', '--seed', '10']
-    >>> filename, run_opts, overrides = parse_arguments(argv)
+    >>> data_folder, filename, audio_path, run_opts, overrides = parse_arguments(argv)
     >>> filename
     'hyperparams.yaml'
     >>> run_opts["device"]
@@ -243,10 +247,22 @@ def parse_arguments(arg_list=None):
         arg_list = sys.argv[1:]
     parser = argparse.ArgumentParser(description="Run a SpeechBrain experiment")
     parser.add_argument(
+        "data_folder",
+        type=str,
+        help="The path to the csv files containing the metadata "
+        "updated from original implementation.",
+    )
+    parser.add_argument(
         "param_file",
         type=str,
         help="A yaml-formatted file using the extended YAML syntax. "
         "defined by SpeechBrain.",
+    )
+    parser.add_argument(
+        "audio_path",
+        type=str,
+        help="The path to the folder containing the audio data"
+        "updated from original implementation.",
     )
     parser.add_argument(
         "--test_only",
@@ -470,7 +486,9 @@ def parse_arguments(arg_list=None):
     # Ignore items that are "None", they were not passed
     run_opts = {k: v for k, v in vars(run_opts).items() if v is not None}
 
+    data_folder = run_opts["data_folder"]
     param_file = run_opts["param_file"]
+    audio_path = run_opts["audio_path"]
     del run_opts["param_file"]
 
     overrides = _convert_to_yaml(overrides)
@@ -485,7 +503,7 @@ def parse_arguments(arg_list=None):
     if local_rank is not None and "cuda" in run_opts["device"]:
         run_opts["device"] = run_opts["device"][:-1] + str(local_rank)
 
-    return param_file, run_opts, overrides
+    return data_folder, param_file, audio_path, run_opts, overrides
 
 
 def _convert_to_yaml(overrides):
